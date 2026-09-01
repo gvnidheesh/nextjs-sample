@@ -24,3 +24,49 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Rendered Markdown (post body). Tailwind v4 here has no typography plugin, so
+   these are the minimal element styles the article content needs. */
+.prose-newsroom h1,
+.prose-newsroom h2,
+.prose-newsroom h3 {
+  font-weight: 600;
+  line-height: 1.25;
+  margin-top: 0.5rem;
+}
+.prose-newsroom h1 {
+  font-size: 1.6rem;
+}
+.prose-newsroom h2 {
+  font-size: 1.3rem;
+}
+.prose-newsroom h3 {
+  font-size: 1.1rem;
+}
+.prose-newsroom a {
+  text-decoration: underline;
+}
+.prose-newsroom ul,
+.prose-newsroom ol {
+  padding-left: 1.5rem;
+  list-style: revert;
+}
+.prose-newsroom blockquote {
+  border-left: 3px solid currentColor;
+  padding-left: 1rem;
+  opacity: 0.8;
+}
+.prose-newsroom pre {
+  overflow-x: auto;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background: rgba(127, 127, 127, 0.12);
+  font-size: 0.875rem;
+}
+.prose-newsroom code {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.9em;
+}
+.prose-newsroom img {
+  border-radius: 0.5rem;
+}
