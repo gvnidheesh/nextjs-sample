@@ -1,5 +1,38 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Content management
+
+A small newsroom-style CMS is built in:
+
+| Area | Path | Purpose |
+| --- | --- | --- |
+| Public home | `/` | Published news posts, newest first |
+| Post page | `/news/<slug>` | One post, Markdown body + images |
+| Gallery | `/gallery` | All uploaded images |
+| Admin | `/admin` | Password-protected: create / edit / delete posts, upload images |
+
+### Setup
+
+1. `cp .env.example .env.local` and set:
+   - `ADMIN_PASSWORD` — unlocks `/admin` (single shared editor password)
+   - `SESSION_SECRET` — signs the admin cookie; generate with
+     `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+2. `npm install`
+3. `npm run dev`, then open `/admin` and sign in.
+
+### Where data lives
+
+- Posts + image metadata: `data/cms.db` (SQLite, via Node's built-in
+  `node:sqlite` — no native module). Created automatically on first run.
+- Image files: `public/uploads/`, served at `/uploads/<file>`.
+- Both are gitignored.
+
+> **Deploy note:** the `Dockerfile` runs `next start` in an ephemeral container,
+> so `data/` and `public/uploads/` are wiped on each redeploy. For a persistent
+> deployment, mount a volume at those paths, or swap `src/lib/db.ts` +
+> `src/lib/images.ts` for a hosted database and object storage (e.g. Postgres +
+> S3) — the rest of the app talks only to those two modules.
+
 ## Getting Started
 
 First, run the development server:
