@@ -1,0 +1,50 @@
+name: Release - Build and Push to Amazon ECR
+
+on:
+  push:
+    tags:
+      - 'v*'            # runs on git tags like v1.2.0
+
+env:
+  AWS_REGION: ap-south-1
+  ECR_REPOSITORY: my-app
+
+permissions:
+  id-token: write       # needed for OIDC login to AWS (see note below)
+  contents: write       # needed to create the GitHub Release
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: production    # approval gate + production secrets
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag and push image
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          VERSION: ${{ github.ref_name }}      # e.g. v1.2.0
+        run: |
+          IMAGE=$REGISTRY/$ECR_REPOSITORY
+          docker build \
+            -t $IMAGE:$VERSION \
+            -t $IMAGE:${GITHUB_SHA::7} \
+            -t $IMAGE:latest .
+          docker push --all-tags $IMAGE
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
