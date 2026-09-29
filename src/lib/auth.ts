@@ -75,6 +75,6 @@ export async function isAdmin(): Promise<boolean> {
 /** Use at the top of every protected page / Server Action. */
 export async function requireAdmin(): Promise<void> {
   if (!(await isAdmin())) {
-    redirect("/admin/login");
+    redirect("/auth/login");
   }
 }

@@ -8,6 +8,7 @@ import {
   requireAdmin,
   startSession,
 } from "@/lib/auth";
+import { issueCaptcha, verifyCaptcha, type Captcha } from "@/lib/captcha";
 import {
   deletePost as deletePostRow,
   getPostById,
@@ -25,6 +26,8 @@ import {
 
 export interface FormState {
   error?: string;
+  /** A fresh challenge to render after a failed attempt. */
+  captcha?: Captcha;
 }
 
 // --- Auth -----------------------------------------------------------------
@@ -33,9 +36,20 @@ export async function login(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
+  const captchaToken = formData.get("captcha_token");
+  const captchaAnswer = formData.get("captcha");
+  if (
+    !verifyCaptcha(
+      typeof captchaToken === "string" ? captchaToken : "",
+      typeof captchaAnswer === "string" ? captchaAnswer : "",
+    )
+  ) {
+    return { error: "Captcha answer is incorrect.", captcha: issueCaptcha() };
+  }
+
   const password = formData.get("password");
   if (!checkPassword(typeof password === "string" ? password : "")) {
-    return { error: "Incorrect password." };
+    return { error: "Incorrect password.", captcha: issueCaptcha() };
   }
   await startSession();
   redirect("/admin");
@@ -43,7 +57,7 @@ export async function login(
 
 export async function logout(): Promise<void> {
   await endSession();
-  redirect("/admin/login");
+  redirect("/auth/login");
 }
 
 // --- Posts --------------------------------------------------------------

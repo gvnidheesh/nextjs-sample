@@ -1,12 +1,17 @@
 "use client";
 
 import { useActionState } from "react";
-import { login, type FormState } from "../actions";
+import { login, type FormState } from "@/app/admin/actions";
+import type { Captcha } from "@/lib/captcha";
 
 const initial: FormState = {};
 
-export function LoginForm() {
+export function LoginForm({ captcha }: { captcha: Captcha }) {
   const [state, action, pending] = useActionState(login, initial);
+
+  // After a failed attempt the action hands back a fresh challenge; fall back to
+  // the one rendered by the page on first load.
+  const challenge = state.captcha ?? captcha;
 
   return (
     <form action={action} className="flex flex-col gap-4">
@@ -19,6 +24,21 @@ export function LoginForm() {
           required
           className="rounded-md border border-black/15 bg-transparent px-3 py-2 text-base outline-none focus:border-foreground dark:border-white/20"
         />
+      </label>
+
+      <label className="flex flex-col gap-1 text-sm font-medium">
+        {challenge.question}
+        <input
+          // Remount (clearing the field) whenever a new challenge arrives.
+          key={challenge.token}
+          type="text"
+          name="captcha"
+          inputMode="numeric"
+          autoComplete="off"
+          required
+          className="rounded-md border border-black/15 bg-transparent px-3 py-2 text-base outline-none focus:border-foreground dark:border-white/20"
+        />
+        <input type="hidden" name="captcha_token" value={challenge.token} />
       </label>
 
       {state.error && (
